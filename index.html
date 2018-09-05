@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    .widget {
+        border: 1px solid red;
+        position: absolute;
+    }
+
+    .window {
+        position: relative;
+    }
+</style>
+</head>
+<body>
+{{{ windows }}}
+<script>
+
+    function getOffset(el, relativeTo) {
+        let x = 0;
+        let y = 0;
+
+        while (true) {
+            x += el.offsetLeft;
+            x += el.offsetParent.clientLeft;
+            y += el.offsetTop;
+            y += el.offsetParent.clientTop;
+            el = el.offsetParent;
+            if (el === relativeTo)
+                break;
+        }
+
+        return {x, y};
+    }
+
+    function dump(root) {
+        let widgets = root.querySelectorAll('*[data-widx]');
+
+        var json = [];
+        json[63] = null;
+        json.fill(null, 0, 64);
+        widgets.forEach((w) => {
+            var el = {};
+
+            el.left = getOffset(w, root).x;
+            el.top = getOffset(w, root).y;
+            el.right = el.left + w.offsetWidth - 1;
+            el.bottom = el.top + w.offsetHeight - 1;
+            el.type = parseInt(w.dataset['type']);
+            el.content = parseInt(w.dataset['content']);
+            el.tooltip = parseInt(w.dataset['tooltip']);
+            el.colour = parseInt(w.dataset['colour']);
+
+            json.splice(parseInt(w.dataset['widx'], 10), 1, el);
+        });
+        json = json.filter(item => item !== null);
+
+        return json;
+    }
+
+    let windows = document.querySelectorAll('.window');
+    windows.forEach((window) => {
+        dump(window);
+    });
+</script>
+</body>
+</html>
